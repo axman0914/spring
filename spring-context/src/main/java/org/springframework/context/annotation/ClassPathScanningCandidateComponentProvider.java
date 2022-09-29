@@ -441,7 +441,6 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 						if (isCandidateComponent(metadataReader)) { // @Component-->includeFilters判断
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setSource(resource);
-
 							if (isCandidateComponent(sbd)) {
 								if (debugEnabled) {
 									logger.debug("Identified candidate component class: " + resource);
@@ -541,6 +540,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		//isIndependent()判断是否为独立的类(内部类就不是独立的类)，不是则不能成为一个Bean，返回false
 		//isConcrete()判断是否为接口或者抽象类，是则不能成为一个Bean
 		//hasAnnotatedMethods(Lookup.class.getName())如果抽象类中的某个方法有@Lookup注解，则可以成为一个Bean
+		//@Lookup注解可以给单例Bean的属性多次赋值
 		return (metadata.isIndependent() && (metadata.isConcrete() ||
 				(metadata.isAbstract() && metadata.hasAnnotatedMethods(Lookup.class.getName()))));
 	}

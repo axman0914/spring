@@ -373,6 +373,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * new definition to be skipped in favor of the existing definition
 	 */
 	protected boolean isCompatible(BeanDefinition newDefinition, BeanDefinition existingDefinition) {
+		//newDefinition.getSource().equals(existingDefinition.getSource())判断两个名字相同的类的BeanDefinition是否相同，如果相同就代表是一个类，兼容
 		return (!(existingDefinition instanceof ScannedGenericBeanDefinition) ||  // explicitly registered overriding bean
 				(newDefinition.getSource() != null && newDefinition.getSource().equals(existingDefinition.getSource())) ||  // scanned same file twice
 				newDefinition.equals(existingDefinition));  // scanned equivalent class twice
