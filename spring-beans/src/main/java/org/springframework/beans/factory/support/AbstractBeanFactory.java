@@ -356,7 +356,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 				else if (mbd.isPrototype()) {
-					// It's a prototype -> create a new instance.
+					// It's a prototype ->  create a new instance.
 					Object prototypeInstance = null;
 					try {
 						beforePrototypeCreation(beanName);
