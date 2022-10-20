@@ -524,6 +524,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
+			//创建Bean
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
@@ -558,7 +559,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
 			throws BeanCreationException {
 
-		// 实例化bean
+		// 1、实例化bean
 		// Instantiate the bean.
 		BeanWrapper instanceWrapper = null;
 		if (mbd.isSingleton()) {
@@ -580,6 +581,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					//2、应用后置处理器修改BeanDefinition
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -590,7 +592,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
-		// 为了解决循环依赖提前缓存单例创建工厂
+		//3、为了解决循环依赖提前缓存单例创建工厂
+		//饥饿加载bean，解决循环依赖问题
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
@@ -600,17 +603,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			// 4、如何解决循环依赖问题呢，就是提前将实例化的bean放入缓存，以beanName->bean的引用方式放入map,在createBean的上一步getBean的时候就会从缓存中拿到bean
 			// 循环依赖-添加到三级缓存
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
 		// Initialize the bean instance.
+		// 5、初始化bean的实例
 		Object exposedObject = bean;
 		try {
-			// 属性填充
+			// 6、属性填充，如果属性是依赖注入的其他bean，走一遍getBean
 			populateBean(beanName, mbd, instanceWrapper);
 
-			// 初始化
+			// 7、初始化，调用aware方法，bean后置处理器的初始化前方法，初始化方法，初始化后方法
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -652,6 +657,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Register bean as disposable.
+		// 8、注册需要执行销毁回调的单例bean，比如在销毁方法中释放资源
 		try {
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		}
