@@ -152,11 +152,11 @@ public abstract class AnnotationConfigUtils {
 		if (beanFactory != null) {
 
 			// 设置beanFactory的OrderComparator为AnnotationAwareOrderComparator
-			// 它是一个Comparator，是一个比较器，可以用来进行排序，比如new ArrayList<>().sort(Comparator);
+			// 它是一个Comparator，是一个比较器，可以用来进行排序，获取@Priority的值、Ordered接口的值、@Order注解的值
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
 			}
-			// 用来判断某个Bean能不能用来进行依赖注入
+			// 设置AutowireCandidateResolver ，自动注入候选者解析器，用来判断某个Bean能不能用来进行依赖注入
 			if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
 				beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
 			}
@@ -164,21 +164,21 @@ public abstract class AnnotationConfigUtils {
 
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 
-		// 注册ConfigurationClassPostProcessor类型的BeanDefinition
+		// 向BeanFactory中添加ConfigurationClassPostProcessor对应的BeanDefinition，解析配置类的BeanFactoryPostProcessor，会进行扫描
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
-		// 注册AutowiredAnnotationBeanPostProcessor类型的BeanDefinition
+		// 向BeanFactory中添加AutowiredAnnotationBeanPostProcessor对应得BeanDefinition，会处理Bean中@Autowired、@Value进行依赖注入
 		if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
-		// 注册CommonAnnotationBeanPostProcessor类型的BeanDefinition
+		// 向BeanFactory中添加CommonAnnotationBeanPostProcessor对应得BeanDefinition，会处理Bean中@Resource进行依赖注入
 		// Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
 		if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
@@ -203,6 +203,8 @@ public abstract class AnnotationConfigUtils {
 		}
 
 		// 注册EventListenerMethodProcessor类型的BeanDefinition，用来处理@EventListener注解的
+		//向BeanFactory中添加EventListenerMethodProcessor对应得BeanDefinition，
+		// 用来解析单例Bean中用@EventListener注解了的方法，并封装为ApplicationListener并加入到ApplicationContext中
 		if (!registry.containsBeanDefinition(EVENT_LISTENER_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(EventListenerMethodProcessor.class);
 			def.setSource(source);
